@@ -34,6 +34,7 @@
     padding: 0 4px;
   }
   .score { color: #e94560; font-size: 22px; font-weight: bold; }
+  .timer { color: #c0a060; font-size: 18px; font-weight: bold; }
   .best  { color: #888; font-size: 16px; }
   .game-area {
     position: relative;
@@ -92,6 +93,7 @@
 <div class="container">
   <div class="header">
     <div class="score">分数: <span id="score">0</span></div>
+    <div class="timer">⏱ <span id="timer">00:00</span></div>
     <div class="best">最高: <span id="best">0</span></div>
   </div>
   <div class="game-area">
@@ -111,6 +113,7 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
 const bestEl = document.getElementById('best');
+const timerEl = document.getElementById('timer');
 const overlay = document.getElementById('overlay');
 const joystick = document.getElementById('joystick');
 const thumb = document.getElementById('thumb');
@@ -122,7 +125,13 @@ canvas.width = COLS * GRID;
 canvas.height = ROWS * GRID;
 
 let snake, food, dir, nextDir, score, best, gameLoop, running, paused;
-best = parseInt(localStorage.getItem('snakeBest')) || 0;
+let elapsed, timerInterval, startTime;
+
+try {
+  const saved = localStorage.getItem('snakeBest');
+  best = saved ? parseInt(saved, 10) : 0;
+  if (isNaN(best)) best = 0;
+} catch(e) { best = 0; }
 bestEl.textContent = best;
 
 function init() {
@@ -140,7 +149,20 @@ function init() {
   running = true;
   paused = false;
   overlay.classList.add('hidden');
+  elapsed = 0;
+  startTime = Date.now();
+  timerEl.textContent = '00:00';
+  clearInterval(timerInterval);
+  timerInterval = setInterval(updateTimer, 1000);
   spawnFood();
+}
+
+function updateTimer() {
+  if (!running || paused) return;
+  elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const m = Math.floor(elapsed / 60);
+  const s = elapsed % 60;
+  timerEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
 }
 
 function spawnFood() {
@@ -190,6 +212,14 @@ function draw() {
     ctx.fillRect(s.x * GRID + 1, s.y * GRID + 1, GRID - 2, GRID - 2);
   });
 
+  // 右下角日期
+  const now = new Date();
+  const ds = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.font = '11px "Segoe UI"';
+  ctx.textAlign = 'right';
+  ctx.fillText(ds, canvas.width - 6, canvas.height - 6);
+
   if (paused) {
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -203,10 +233,11 @@ function draw() {
 function gameOver() {
   running = false;
   clearInterval(gameLoop);
+  clearInterval(timerInterval);
   if (score > best) {
     best = score;
-    localStorage.setItem('snakeBest', best);
     bestEl.textContent = best;
+    try { localStorage.setItem('snakeBest', String(best)); } catch(e) {}
   }
   overlay.textContent = '游戏结束';
   overlay.classList.remove('hidden');
@@ -226,6 +257,12 @@ function setDirection(d) {
 canvas.addEventListener('click', () => {
   if (!running) { restart(); return; }
   paused = !paused;
+  if (paused) {
+    clearInterval(timerInterval);
+  } else {
+    startTime = Date.now() - elapsed * 1000;
+    timerInterval = setInterval(updateTimer, 1000);
+  }
 });
 
 // 摇杆逻辑
@@ -279,6 +316,12 @@ document.addEventListener('keydown', e => {
     e.preventDefault();
     if (!running) { restart(); return; }
     paused = !paused;
+    if (paused) {
+      clearInterval(timerInterval);
+    } else {
+      startTime = Date.now() - elapsed * 1000;
+      timerInterval = setInterval(updateTimer, 1000);
+    }
   }
 });
 
