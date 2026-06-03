@@ -180,30 +180,67 @@ let elapsed, timerInterval, startTime;
 let particles = [];
 let speedLevel = 0;
 let foodsEaten = 0;
-let audioCtx;
+// 用 <audio> 播放，自动跟随设备静音开关
+function makeWav(freq, type, duration, vol) {
+  const sampleRate = 8000;
+  const samples = Math.floor(sampleRate * duration);
+  const buffer = new ArrayBuffer(44 + samples);
+  const view = new DataView(buffer);
 
-function beep(freq, type, duration, vol) {
-  if (!audioCtx) {
-    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return; }
+  function w(s, o, v) { view.setUint8(s + o, v, true); }
+  function w16(s, o, v) { view.setInt16(s + o, v, true); }
+  function w32(s, o, v) { view.setUint32(s + o, v, true); }
+
+  // RIFF header
+  w(0, 0, 0x52); w(0, 1, 0x49); w(0, 2, 0x46); w(0, 3, 0x46); // "RIFF"
+  w32(0, 4, 36 + samples);                                       // chunk size
+  w(0, 8, 0x57); w(0, 9, 0x41); w(0, 10, 0x56); w(0, 11, 0x45); // "WAVE"
+
+  // fmt chunk
+  w(0, 12, 0x66); w(0, 13, 0x6d); w(0, 14, 0x74); w(0, 15, 0x20); // "fmt "
+  w32(0, 16, 16);       // chunk size
+  w16(0, 20, 1);        // PCM
+  w16(0, 22, 1);        // mono
+  w32(0, 24, sampleRate);
+  w32(0, 28, sampleRate);
+  w16(0, 32, 1);        // block align
+  w16(0, 34, 8);        // bits per sample
+
+  // data chunk
+  w(0, 36, 0x64); w(0, 37, 0x61); w(0, 38, 0x74); w(0, 39, 0x61); // "data"
+  w32(0, 40, samples);
+
+  for (let i = 0; i < samples; i++) {
+    const t = i / sampleRate;
+    let v;
+    if (type === 'sine') v = Math.sin(2 * Math.PI * freq * t);
+    else v = Math.sin(2 * Math.PI * freq * t) > 0 ? 1 : -1;
+
+    // 淡入淡出
+    const env = Math.min(1, i / 100, (samples - i) / 100);
+    v *= env * vol * 127;
+
+    view.setUint8(44 + i, Math.round(v + 128));
   }
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-  gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  osc.stop(audioCtx.currentTime + duration);
+
+  return URL.createObjectURL(new Blob([buffer], { type: 'audio/wav' }));
+}
+
+const sfxEat = makeWav(600, 'sine', 0.1, 0.25);
+const sfxBonus1 = makeWav(880, 'square', 0.15, 0.15);
+const sfxBonus2 = makeWav(1100, 'square', 0.12, 0.12);
+
+function playSfx(url) {
+  const a = new Audio(url);
+  a.play().catch(() => {}); // 静音开关开启时 play 会 reject，忽略即可
 }
 
 function eatSound(bonus) {
   if (bonus) {
-    beep(880, 'square', 0.15, 0.12);
-    setTimeout(() => beep(1100, 'square', 0.12, 0.1), 80);
+    playSfx(sfxBonus1);
+    setTimeout(() => playSfx(sfxBonus2), 80);
   } else {
-    beep(600, 'sine', 0.1, 0.08);
+    playSfx(sfxEat);
   }
 }
 
@@ -624,6 +661,22 @@ function startLoop() {
 
 init();
 startLoop();
+
+// iOS 音频解锁：首次交互时播一个静音，后续音效才能正常播放
+let audioUnlocked = false;
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  const a = new Audio(sfxEat);
+  a.volume = 0;
+  a.play().catch(() => {});
+  document.removeEventListener('touchstart', unlockAudio);
+  document.removeEventListener('click', unlockAudio);
+  document.removeEventListener('keydown', unlockAudio);
+}
+document.addEventListener('touchstart', unlockAudio);
+document.addEventListener('click', unlockAudio);
+document.addEventListener('keydown', unlockAudio);
 </script>
 </body>
 </html>
