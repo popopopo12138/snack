@@ -136,8 +136,6 @@
   .end .lb .d { flex: 1; text-align: left; }
   .end .lb .s { font-weight: 700; }
 
-  .joy-wrap { transition: opacity 0.4s, transform 0.4s; }
-  .joy-wrap.off { opacity: 0; transform: translateY(20px); pointer-events: none; }
   .joy-base {
     width: 110px; height: 110px;
     border-radius: 50%;
@@ -200,10 +198,8 @@
     </div>
   </div>
 
-  <div class="joy-wrap" id="joyWrap">
-    <div class="joy-base" id="joy">
-      <div class="joy-thumb" id="thumb"></div>
-    </div>
+  <div class="joy-base" id="joy">
+    <div class="joy-thumb" id="thumb"></div>
   </div>
 
   <div class="tip">
@@ -213,7 +209,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  // ===================== DOM =====================
   var canvas = document.getElementById('c');
   var ctx = canvas.getContext('2d');
 
@@ -227,24 +222,21 @@ document.addEventListener('DOMContentLoaded', function () {
   var endLn   = document.getElementById('endLen');
   var endBtn  = document.getElementById('endBtn');
   var lbEl    = document.getElementById('lbList');
-  var joyWrap = document.getElementById('joyWrap');
   var joyEl   = document.getElementById('joy');
   var thumbEl = document.getElementById('thumb');
 
-  // ===================== 常量 =====================
   var GRID = 20;
   var COLS = 25;
   var ROWS = 25;
   canvas.width  = COLS * GRID;
   canvas.height = ROWS * GRID;
 
-  // ===================== 状态 =====================
   var snake, food, bonus, bonusTimer, dir, nextDir;
   var score, best, loopId, running, paused, level, eatCount;
   var elapsed, timerId, startTime;
   var particles = [];
 
-  // ===================== 音效 =====================
+  // ---- 音效 ----
   function makeWav(freq, type, dur) {
     var sr = 8000;
     var n = Math.floor(sr * dur);
@@ -269,7 +261,6 @@ document.addEventListener('DOMContentLoaded', function () {
       sm = sm * env * 0.3 * 127;
       w1(Math.round(sm + 128));
     }
-
     return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
   }
 
@@ -291,7 +282,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // 解锁 iOS 音频
   var audioUnlocked = false;
   function unlockAudio() {
     if (audioUnlocked) return;
@@ -304,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('click', unlockAudio, { once: true });
   document.addEventListener('keydown', unlockAudio, { once: true });
 
-  // ===================== 排行榜 =====================
+  // ---- 排行榜 ----
   function loadLB() {
     try { return JSON.parse(localStorage.getItem('s2_lb') || '[]'); } catch (e) { return []; }
   }
@@ -333,17 +323,14 @@ document.addEventListener('DOMContentLoaded', function () {
     lbEl.innerHTML = html;
   }
 
-  // ===================== 最高分 =====================
   try { best = parseInt(localStorage.getItem('snakeBest'), 10) || 0; } catch (e) { best = 0; }
   if (isNaN(best)) best = 0;
   bestEl.textContent = best;
 
-  // ===================== 速度 =====================
   function getSpeed() {
     return Math.max(40, 100 - level * 5);
   }
 
-  // ===================== 空闲格子 =====================
   function freeCell() {
     var used = {};
     for (var i = 0; i < snake.length; i++) {
@@ -372,9 +359,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function spawnBonus() {
     bonus = freeCell();
     if (bonus) {
-      bonusTimer = setTimeout(function () {
-        bonus = null;
-      }, 8000);
+      bonusTimer = setTimeout(function () { bonus = null; }, 8000);
     }
   }
 
@@ -385,7 +370,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // ===================== 粒子 =====================
   function addParticles(x, y, color, count) {
     var cx = x * GRID + GRID / 2;
     var cy = y * GRID + GRID / 2;
@@ -393,8 +377,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var angle = (Math.PI * 2 * i / count) + Math.random() * 0.4;
       var speed = 1.5 + Math.random() * 3;
       particles.push({
-        x: cx,
-        y: cy,
+        x: cx, y: cy,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         life: 1,
@@ -404,12 +387,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // ===================== 触觉反馈 =====================
   function vibrate() {
     try { if (navigator.vibrate) navigator.vibrate(30); } catch (e) {}
   }
 
-  // ===================== 吃食物 =====================
   function eatFood(f, isBonus) {
     if (isBonus) {
       score += 30;
@@ -439,23 +420,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // ===================== 更新 =====================
   function update() {
     if (!running || paused) return;
 
     dir = { x: nextDir.x, y: nextDir.y };
-    var head = {
-      x: snake[0].x + dir.x,
-      y: snake[0].y + dir.y
-    };
+    var head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
 
-    // 撞墙
     if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
       gameOver();
       return;
     }
 
-    // 撞自己
     for (var i = 0; i < snake.length; i++) {
       if (snake[i].x === head.x && snake[i].y === head.y) {
         gameOver();
@@ -480,7 +455,6 @@ document.addEventListener('DOMContentLoaded', function () {
       snake.pop();
     }
 
-    // 更新粒子
     for (var i = particles.length - 1; i >= 0; i--) {
       var p = particles[i];
       p.x += p.vx;
@@ -492,11 +466,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // ===================== 渲染 =====================
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 网格
+    // grid
     ctx.strokeStyle = 'rgba(255,255,255,0.06)';
     ctx.lineWidth = 0.5;
     for (var x = 0; x <= COLS; x++) {
@@ -512,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function () {
       ctx.stroke();
     }
 
-    // 粒子
+    // particles
     for (var i = 0; i < particles.length; i++) {
       var pp = particles[i];
       ctx.globalAlpha = pp.life;
@@ -523,7 +496,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     ctx.globalAlpha = 1;
 
-    // 食物
+    // food
     if (food) {
       var fx = food.x * GRID + GRID / 2;
       var fy = food.y * GRID + GRID / 2;
@@ -537,7 +510,7 @@ document.addEventListener('DOMContentLoaded', function () {
       ctx.shadowBlur = 0;
     }
 
-    // 奖励食物
+    // bonus food
     if (bonus) {
       var bx = bonus.x * GRID + GRID / 2;
       var by = bonus.y * GRID + GRID / 2;
@@ -571,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function () {
       ctx.restore();
     }
 
-    // 蛇
+    // snake
     for (var i = 0; i < snake.length; i++) {
       var seg = snake[i];
       var alpha = 1 - (i / (snake.length + 10)) * 0.6;
@@ -597,7 +570,7 @@ document.addEventListener('DOMContentLoaded', function () {
       ctx.fill();
     }
 
-    // 日期
+    // date
     var now = new Date();
     ctx.fillStyle = 'rgba(255,255,255,0.18)';
     ctx.font = '10px -apple-system,sans-serif';
@@ -610,7 +583,7 @@ document.addEventListener('DOMContentLoaded', function () {
       canvas.height - 8
     );
 
-    // 暂停
+    // pause overlay
     if (paused) {
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -621,7 +594,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // ===================== 死亡 =====================
   function gameOver() {
     running = false;
     clearInterval(loopId);
@@ -632,19 +604,16 @@ document.addEventListener('DOMContentLoaded', function () {
     playSfx(SFX_DIE);
     setTimeout(vibrate, 50);
 
-    // 蛇爆炸
     for (var i = 0; i < snake.length; i++) {
       addParticles(snake[i].x, snake[i].y, '#00ff88', 6);
     }
 
-    // 存最高分
     if (score > best) {
       best = score;
       bestEl.textContent = best;
       try { localStorage.setItem('snakeBest', String(best)); } catch (e) {}
     }
 
-    // 排行榜
     var now = new Date();
     var dateStr = (now.getMonth() + 1) + '/' + now.getDate() + ' ' +
       String(now.getHours()).padStart(2, '0') + ':' +
@@ -653,14 +622,12 @@ document.addEventListener('DOMContentLoaded', function () {
     saveLB({ score: score, date: dateStr, id: entryId });
     showLB(entryId);
 
-    // 结束面板
     endSc.textContent = score;
     endTm.textContent = timerEl.textContent;
     endLn.textContent = snake.length;
     endEl.classList.add('on');
   }
 
-  // ===================== 重开 =====================
   function restart() {
     var mx = Math.floor(COLS / 2);
     var my = Math.floor(ROWS / 2);
@@ -702,33 +669,12 @@ document.addEventListener('DOMContentLoaded', function () {
     timerEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
   }
 
-  // ===================== 方向 =====================
   function setDir(d) {
-    // 禁止反向
     if (dir.x === -d.x && dir.y === -d.y) return;
     nextDir = d;
     if (!running) restart();
-    hideJoystick();
   }
 
-  // ===================== 摇杆显隐 =====================
-  var joyVisible = true;
-  function hideJoystick() {
-    if (!joyVisible) return;
-    joyVisible = false;
-    joyWrap.classList.add('off');
-  }
-
-  // 桌面端初始隐藏摇杆
-  if (window.matchMedia) {
-    var isDesktop = window.matchMedia('(pointer: fine) and (hover: hover)').matches;
-    if (isDesktop) {
-      joyVisible = false;
-      joyWrap.classList.add('off');
-    }
-  }
-
-  // ===================== 暂停 =====================
   function togglePause() {
     if (!running) {
       restart();
@@ -743,7 +689,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // ===================== 结束面板按钮 =====================
   endBtn.addEventListener('click', function (e) {
     e.stopPropagation();
     restart();
@@ -752,7 +697,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (e.target === endEl) restart();
   });
 
-  // ===================== 画布事件 =====================
+  // ---- canvas touch ----
   var swipeX, swipeY, swiping = false;
 
   canvas.addEventListener('touchstart', function (e) {
@@ -788,7 +733,7 @@ document.addEventListener('DOMContentLoaded', function () {
     togglePause();
   });
 
-  // ===================== 摇杆 =====================
+  // ---- joystick ----
   var joyOn = false;
   var JOY_MAX = 33;
 
@@ -849,7 +794,7 @@ document.addEventListener('DOMContentLoaded', function () {
   joyEl.addEventListener('touchend',   joyEnd);
   joyEl.addEventListener('touchcancel', joyEnd);
 
-  // ===================== 键盘 =====================
+  // ---- keyboard ----
   document.addEventListener('keydown', function (e) {
     var keyMap = {
       'ArrowUp':    { x: 0, y: -1 },
@@ -876,14 +821,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // ===================== 防下拉刷新 =====================
+  // ---- prevent pull-to-refresh on canvas/joystick ----
   document.addEventListener('touchmove', function (e) {
     if (e.target === canvas || (e.target.closest && e.target.closest('.joy-base'))) {
       e.preventDefault();
     }
   }, { passive: false });
 
-  // ===================== 主循环 =====================
+  // ---- main loop ----
   function gameTick() {
     update();
     draw();
@@ -894,7 +839,6 @@ document.addEventListener('DOMContentLoaded', function () {
     loopId = setInterval(gameTick, getSpeed());
   }
 
-  // ===================== 启动 =====================
   restart();
 });
 </script>
