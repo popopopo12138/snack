@@ -6,14 +6,14 @@
 <title>贪吃蛇</title>
 <style>
   :root {
-    --bg: #0f0f1a;
-    --panel: #16162a;
-    --border: #252550;
+    --bg: #1a1a2e;
+    --panel: #222244;
+    --border: #3a3a6a;
     --accent: #e94560;
     --gold: #ffd700;
     --green: #00e676;
-    --text: #ccc;
-    --muted: #666;
+    --text: #ddd;
+    --muted: #888;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -72,7 +72,7 @@
     height: 100%;
     display: block;
     touch-action: none;
-    background: #12122a;
+    background: #1e1e3a;
   }
 
   /* ── overlay ── */
@@ -98,7 +98,7 @@
   }
   .overlay-title { font-size: 26px; font-weight: 800; }
   .overlay-score { font-size: 38px; font-weight: 800; color: var(--accent); }
-  .overlay-stats { font-size: 13px; color: #999; display: flex; gap: 16px; margin-bottom: 4px; }
+  .overlay-stats { font-size: 13px; color: #aaa; display: flex; gap: 16px; margin-bottom: 4px; }
   .overlay-stats span { color: #ddd; }
 
   .btn {
@@ -144,14 +144,14 @@
   .lb-rank.bronze { color: #cd7f32; }
   .lb-date { flex: 1; text-align: left; }
   .lb-score { font-weight: 700; }
-  .lb-empty { color: #444; font-size: 13px; text-align: center; padding: 10px; }
+  .lb-empty { color: #555; font-size: 13px; text-align: center; padding: 10px; }
 
   /* ── joystick ── */
   .joystick-base {
     width: 110px; height: 110px;
     border-radius: 50%;
     background: radial-gradient(circle at center, rgba(255,255,255,0.05), transparent 70%);
-    border: 2px solid rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.12);
     position: relative;
     touch-action: none;
   }
@@ -160,7 +160,7 @@
     position: absolute;
     inset: 4px;
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
   }
   .joystick-thumb {
     width: 42px; height: 42px;
@@ -177,14 +177,14 @@
 
   /* ── hint ── */
   .hint {
-    color: #444;
+    color: #555;
     font-size: 12px;
     text-align: center;
     letter-spacing: 0.5px;
   }
   .hint kbd {
     color: var(--accent);
-    background: rgba(233,69,96,0.08);
+    background: rgba(233,69,96,0.1);
     padding: 1px 6px;
     border-radius: 3px;
     font-size: 11px;
@@ -203,7 +203,7 @@
   .speed-dot {
     width: 4px; height: 4px;
     border-radius: 50%;
-    background: #333;
+    background: #444;
     transition: background 0.3s;
   }
   .speed-dot.on { background: var(--accent); box-shadow: 0 0 4px var(--accent); }
@@ -479,7 +479,7 @@ function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // 网格
-  ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
   ctx.lineWidth = 0.5;
   for (let x = 0; x <= COLS; x++) { ctx.beginPath(); ctx.moveTo(x * GRID, 0); ctx.lineTo(x * GRID, canvas.height); ctx.stroke(); }
   for (let y = 0; y <= ROWS; y++) { ctx.beginPath(); ctx.moveTo(0, y * GRID); ctx.lineTo(canvas.width, y * GRID); ctx.stroke(); }
@@ -555,7 +555,7 @@ function draw() {
 
   // 日期
   const now = new Date();
-  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
   ctx.font = '10px -apple-system,sans-serif';
   ctx.textAlign = 'right';
   ctx.fillText(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`, canvas.width - 8, canvas.height - 8);
