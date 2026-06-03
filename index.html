@@ -8,10 +8,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="贪吃蛇">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#1a1a2e">
-<link rel="manifest" href="data:application/json,{"name":"贪吃蛇","short_name":"贪吃蛇","start_url":".","display":"standalone","background_color":"%231a1a2e","theme_color":"%231a1a2e","icons":[{"src":"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a1a2e'/><circle cx='50' cy='50' r='12' fill='%23e94560'/><rect x='50' y='44' width='28' height='12' rx='3' fill='%2300ff88'/><rect x='68' y='44' width='12' height='12' rx='2' fill='rgba(0,230,118,0.7)'/><rect x='78' y='44' width='12' height='12' rx='2' fill='rgba(0,230,118,0.5)'/></svg>","sizes":"any","type":"image/svg+xml"}]}">
+<meta name="theme-color" content="#22223a">
+<link rel="manifest" href="data:application/json,{"name":"贪吃蛇","short_name":"贪吃蛇","start_url":".","display":"standalone","background_color":"%2322223a","theme_color":"%2322223a","icons":[{"src":"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2322223a'/><circle cx='50' cy='50' r='12' fill='%23e94560'/><rect x='50' y='44' width='28' height='12' rx='3' fill='%2300ff88'/><rect x='68' y='44' width='12' height='12' rx='2' fill='rgba(0,230,118,0.7)'/><rect x='78' y='44' width='12' height='12' rx='2' fill='rgba(0,230,118,0.5)'/></svg>","sizes":"any","type":"image/svg+xml"}]}">
 <style>
-  :root { --bg:#1a1a2e; --panel:#222244; --border:#3a3a6a; --accent:#e94560; --gold:#ffd700; }
+  :root { --bg:#22223a; --panel:#2c2c52; --border:#4a4a7a; --accent:#e94560; --gold:#ffd700; }
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
     background:var(--bg); display:flex; justify-content:center; align-items:center;
@@ -31,7 +31,7 @@
   .stat-best  .stat-value { color:#8ecae6; }
 
   .game-area { position:relative; width:100%; aspect-ratio:1; border-radius:12px; overflow:hidden; box-shadow:0 0 40px rgba(233,69,96,0.08),0 0 80px rgba(0,0,0,0.3); }
-  canvas { width:100%; height:100%; display:block; touch-action:none; background:#1e1e3a; }
+  canvas { width:100%; height:100%; display:block; touch-action:none; background:#282850; }
 
   .overlay {
     position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -66,7 +66,7 @@
 
   .level-badge { position:absolute; top:8px; right:8px; background:rgba(233,69,96,.15); color:var(--accent); font-size:11px; font-weight:700; padding:3px 8px; border-radius:10px; pointer-events:none; border:1px solid rgba(233,69,96,.25); }
 
-  .hint { color:#555; font-size:12px; text-align:center; letter-spacing:.5px; }
+  .hint { color:#777; font-size:12px; text-align:center; letter-spacing:.5px; }
   .hint kbd { color:var(--accent); background:rgba(233,69,96,.1); padding:1px 6px; border-radius:3px; font-size:11px; border:1px solid rgba(233,69,96,.15); }
 </style>
 </head>
@@ -245,7 +245,7 @@ function update(){
 
 // ── draw ──
 function drawGrid(){
-  E.ctx.strokeStyle='rgba(255,255,255,.04)';E.ctx.lineWidth=.5;
+  E.ctx.strokeStyle='rgba(255,255,255,.06)';E.ctx.lineWidth=.5;
   for(let x=0;x<=W;x++){E.ctx.beginPath();E.ctx.moveTo(x*G,0);E.ctx.lineTo(x*G,E.canvas.height);E.ctx.stroke()}
   for(let y=0;y<=H;y++){E.ctx.beginPath();E.ctx.moveTo(0,y*G);E.ctx.lineTo(E.canvas.width,y*G);E.ctx.stroke()}
 }
